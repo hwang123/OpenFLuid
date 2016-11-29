@@ -1,3 +1,0 @@
-/Users/williamcaruso/Computer-Graphics/FinalProject/OpenFLuid/starter3/build/vecmath/CMakeFiles/vecmath.dir
-/Users/williamcaruso/Computer-Graphics/FinalProject/OpenFLuid/starter3/build/CMakeFiles/a3.dir
-/Users/williamcaruso/Computer-Graphics/FinalProject/OpenFLuid/starter3/build/3rd_party/glfw/src/CMakeFiles/glfw.dir
