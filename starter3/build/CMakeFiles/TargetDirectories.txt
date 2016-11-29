@@ -1,0 +1,3 @@
+/afs/athena.mit.edu/user/h/w/hwang123/Desktop/Graphics/starter3/build/CMakeFiles/a3.dir
+/afs/athena.mit.edu/user/h/w/hwang123/Desktop/Graphics/starter3/build/3rd_party/glfw/src/CMakeFiles/glfw.dir
+/afs/athena.mit.edu/user/h/w/hwang123/Desktop/Graphics/starter3/build/vecmath/CMakeFiles/vecmath.dir
