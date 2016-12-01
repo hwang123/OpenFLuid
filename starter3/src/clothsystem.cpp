@@ -7,28 +7,23 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 10;
+const int N = 15;
 
-const int W = N;
-const int H = N;
-const float PARTICLE_SPACING = .1;
+const float PARTICLE_SPACING = .08;
+const float PARTICLE_RADIUS = .03;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = .03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
-const float STRUCTURAL_REST_LENGTH = .2; // m
-const float SHEAR_REST_LENGTH = STRUCTURAL_REST_LENGTH*sqrt(2); // m
-const float FLEXION_REST_LENGTH = STRUCTURAL_REST_LENGTH*2; // m
-
 
 ClothSystem::ClothSystem()
 {
     // TODO 5. Initialize m_vVecState with cloth particles. 
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
-    for (unsigned i = 0; i < W; i++){
-        for (unsigned j = 0; j<H; j++){
+    for (unsigned i = 0; i < N; i++){
+        for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = i*PARTICLE_SPACING;
                 float y = j*PARTICLE_SPACING;
@@ -63,7 +58,7 @@ std::vector<Vector3f> ClothSystem::evalF(std::vector<Vector3f> state)
 
     // F = mg  -> GRAVITY
     // ----------------------------------------
-    float gForce = PARTICLE_MASS*GRAVITY;
+    float gForce = PARTICLE_MASS*GRAVITY*0;
     // only in the y-direction
     Vector3f gravityForce = Vector3f(0,-gForce, 0);
     // ----------------------------------------
@@ -96,7 +91,6 @@ void ClothSystem::draw(GLProgram& gl)
 
     // EXAMPLE for how to render cloth particles.
     //  - you should replace this code.
-    float w = 0.2f;
     // EXAMPLE: This shows you how to render lines to debug the spring system.
     //
     //          You should replace this code.
@@ -115,10 +109,10 @@ void ClothSystem::draw(GLProgram& gl)
     // not working :(
     gl.updateMaterial(blue);
 
-    for (int i = 0; i < m_vVecState.size(); i+=2){
+    for (unsigned i = 0; i < m_vVecState.size(); i+=2){
         Vector3f pos = m_vVecState[i];
         gl.updateModelMatrix(Matrix4f::translation(pos));
-        drawSphere(0.03f, 7, 4);
+        drawSphere(PARTICLE_RADIUS, 10, 4);
     }
 
     gl.enableLighting(); // reset to default lighting model

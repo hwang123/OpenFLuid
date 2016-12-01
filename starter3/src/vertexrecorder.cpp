@@ -309,6 +309,6 @@ void drawBox(Vector3f location, float len){
     rec.record(Vector3f(x-len,z-len,y-len), color);
 
     glLineWidth(5.0f);
-    drawQuadCustom(2, z-1);
+    drawQuadCustom(len*2, z-1);
     rec.draw(GL_LINES);
 }
