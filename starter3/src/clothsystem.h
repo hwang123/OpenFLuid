@@ -29,5 +29,4 @@ public:
     Vector2f rowColumnOf(int index);
 };
 
-
 #endif

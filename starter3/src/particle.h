@@ -34,18 +34,15 @@ public:
     void setVelocity(const Vector3f  newVelocity) { _velocity = newVelocity; };
     
     // setter method for the system's position
-    void setNieghbors(const std::vector<int> newNeighbors ) { _neighbors = newNeighbors; };
+    void setNeighbors(const std::vector<int> newNeighbors ) { _neighbors = newNeighbors; };
 
 
  protected:
-    std::vector<Vector3f> m_vVecState;
-};
-
-private:
-    // member variables
+      // member variables
     int _id;
     Vector3f _velocity;
     Vector3f _position;
     std::vector<int> _neighbors; 
 };
+
 #endif

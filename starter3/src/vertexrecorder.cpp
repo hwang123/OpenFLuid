@@ -249,3 +249,66 @@ void drawQuad(float w)
     rec.record(P4, N);
     rec.draw();
 }
+
+void drawQuadCustom(float w, float height)
+{
+    VertexRecorder rec;
+    float wh = w / 2;
+    const Vector3f N(0, 1, 0);
+    const Vector3f P1(-wh, height, -wh);
+    const Vector3f P2(+wh, height, -wh);
+    const Vector3f P3(+wh, height, +wh);
+    const Vector3f P4(-wh, height, +wh);
+
+    // first face
+    rec.record(P1, N);
+    rec.record(P2, N);
+    rec.record(P3, N);
+
+    // second face
+    rec.record(P1, N);
+    rec.record(P3, N);
+    rec.record(P4, N);
+    rec.draw();
+}
+
+// Draws a half-box with it's top-center at location, and width of len
+void drawBox(Vector3f location, float len){
+    float x = location.x();
+    float y = location.y();
+    float z = location.z();
+
+    const Vector3f color(0.1f, 0.9f, 0.4f);
+    VertexRecorder rec;
+
+    rec.record(Vector3f(x-len,z,y+len), color);
+    rec.record(Vector3f(x-len,z-len,y+len), color);
+    rec.record(Vector3f(x+len,z,y+len), color);
+    rec.record(Vector3f(x+len,z-len,y+len), color);
+    rec.record(Vector3f(x+-len,z,y-len), color);
+    rec.record(Vector3f(x+-len,z-len,y-len), color);
+    rec.record(Vector3f(x+len,z,y-len), color);
+    rec.record(Vector3f(x+len,z-len,y-len), color);
+
+    rec.record(Vector3f(x-len,z,y-len), color);
+    rec.record(Vector3f(x+len,z,y-len), color);
+    rec.record(Vector3f(x-len,z,y+len), color);
+    rec.record(Vector3f(x+len,z,y+len), color);
+    rec.record(Vector3f(x+len,z,y+len), color);
+    rec.record(Vector3f(x+len,z,y-len), color);
+    rec.record(Vector3f(x-len,z,y+len), color);
+    rec.record(Vector3f(x-len,z,y-len), color);
+
+    rec.record(Vector3f(x-len,z-len,y-len), color);
+    rec.record(Vector3f(x+len,z-len,y-len), color);
+    rec.record(Vector3f(x-len,z-len,y+len), color);
+    rec.record(Vector3f(x+len,z-len,y+len), color);
+    rec.record(Vector3f(x+len,z-len,y-len), color);
+    rec.record(Vector3f(x+len,z-len,y+len), color);
+    rec.record(Vector3f(x-len,z-len,y+len), color);
+    rec.record(Vector3f(x-len,z-len,y-len), color);
+
+    glLineWidth(5.0f);
+    drawQuadCustom(2, z-1);
+    rec.draw(GL_LINES);
+}
