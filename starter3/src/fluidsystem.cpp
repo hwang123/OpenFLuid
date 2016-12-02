@@ -1,4 +1,4 @@
-#include "clothsystem.h"
+#include "fluidsystem.h"
 #include "camera.h"
 #include "vertexrecorder.h"
 #include <iostream>
@@ -17,7 +17,7 @@ const float PARTICLE_MASS = .03; // kg
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
-ClothSystem::ClothSystem()
+FluidSystem::FluidSystem()
 {
     // TODO 5. Initialize m_vVecState with cloth particles. 
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
@@ -43,7 +43,7 @@ ClothSystem::ClothSystem()
 }
 
 
-std::vector<Particle> ClothSystem::evalF(std::vector<Particle> state)
+std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 {
 
     std::vector<Particle> f;
@@ -82,7 +82,7 @@ std::vector<Particle> ClothSystem::evalF(std::vector<Particle> state)
     return f;
 }
 
-void ClothSystem::draw(GLProgram& gl)
+void FluidSystem::draw(GLProgram& gl)
 {
     //TODO 5: render the system 
     //         - ie draw the particles as little spheres

@@ -1,16 +1,16 @@
-#ifndef CLOTHSYSTEM_H
-#define CLOTHSYSTEM_H
+#ifndef FLUIDSYSTEM_H
+#define FLUIDSYSTEM_H
 
 #include <vector>
 
 #include "particlesystem.h"
 #include "particle.h"
 
-class ClothSystem : public ParticleSystem
+class FluidSystem : public ParticleSystem
 {
     ///ADD MORE FUNCTION AND FIELDS HERE
 public:
-    ClothSystem();
+    FluidSystem();
 
     // evalF is called by the integrator at least once per time step
     std::vector<Particle> evalF(std::vector<Particle> state) override;
