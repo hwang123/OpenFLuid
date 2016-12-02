@@ -5,7 +5,7 @@
 
 SPH is a computational method used for simulating fluid flows. It was developed by Gingold and Monaghan (1977) and Lucy (1977) initially for astrophysical problems. It is a mesh-free Lagrangian method (where the coordinates move with the fluid), and the resolution of the method can easily be adjusted with respect to variables such as the density.
 
-The smoothed-particle hydrodynamics (SPH) method works by dividing the fluid into a set of discrete elements, referred to as particles. These particles have a spatial distance (known as the ``smoothing length", typically represented in equations by `h`, over which their properties are ``smoothed" by a kernel function. This means that the physical quantity of any particle can be obtained by summing the relevant properties of all the particles which lie within the range of the kernel. 
+The smoothed-particle hydrodynamics (SPH) method works by dividing the fluid into a set of discrete elements, referred to as particles. These particles have a spatial distance (known as the "smoothing length", typically represented in equations by `h`, over which their properties are "smoothed" by a kernel function. This means that the physical quantity of any particle can be obtained by summing the relevant properties of all the particles which lie within the range of the kernel. 
 
 ## Plan of Action
 
