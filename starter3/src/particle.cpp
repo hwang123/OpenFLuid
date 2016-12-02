@@ -4,18 +4,21 @@
 using namespace std;
 
 
-Particle::Particle()
+Particle::Particle(int id)
 {
     // default constructor for Particle
+    _id = id;
 }
 
-Particle::Particle(const Vector3f position)
+Particle::Particle(int id, const Vector3f position)
 {
+	_id = id;
     _position = position;
 }
 
-Particle::Particle(const Vector3f position, const Vector3f velocity)
+Particle::Particle(int id, const Vector3f position, const Vector3f velocity)
 {
+	_id = id;
     _position = position;
     _velocity = velocity;
 }

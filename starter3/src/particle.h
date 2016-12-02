@@ -14,12 +14,12 @@ class Particle
 {
 public:
 
-	Particle();
-	Particle(const Vector3f position);
-	Particle(const Vector3f position, const Vector3f velocity);
+	Particle(int id);
+	Particle(int id, const Vector3f position);
+	Particle(int id, const Vector3f position, const Vector3f velocity);
 
     // getter method for the particle's position
-	Vector3f getPositon() { return _position; };
+	Vector3f getPosition() { return _position; };
 
     // getter method for the particle's velocity
 	Vector3f getVelocity() { return _velocity; };

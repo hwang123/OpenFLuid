@@ -7,7 +7,7 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 15;
+const int N = 10;
 
 const float PARTICLE_SPACING = .08;
 const float PARTICLE_RADIUS = .03;
@@ -22,6 +22,7 @@ ClothSystem::ClothSystem()
     // TODO 5. Initialize m_vVecState with cloth particles. 
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
+    int particleCount = 0;
     for (unsigned i = 0; i < N; i++){
         for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
@@ -29,22 +30,23 @@ ClothSystem::ClothSystem()
                 float y = j*PARTICLE_SPACING;
                 float z = l*PARTICLE_SPACING;
                 // particles evenly spaced
-                Vector3f particle = Vector3f(x, y, z);
+                Vector3f position = Vector3f(x, y, z);
                 // all particles stationary
                 Vector3f velocity = Vector3f(0, 0, 0);
 
+                Particle particle = Particle(particleCount, position, velocity);
                 m_vVecState.push_back(particle);
-                m_vVecState.push_back(velocity);
+                particleCount += 1;
             }
         }
     }
 }
 
 
-std::vector<Vector3f> ClothSystem::evalF(std::vector<Vector3f> state)
+std::vector<Particle> ClothSystem::evalF(std::vector<Particle> state)
 {
 
-    std::vector<Vector3f> f;
+    std::vector<Particle> f;
     // TODO 5. implement evalF
     // - gravity
     // - viscous drag
@@ -63,18 +65,18 @@ std::vector<Vector3f> ClothSystem::evalF(std::vector<Vector3f> state)
     Vector3f gravityForce = Vector3f(0,-gForce, 0);
     // ----------------------------------------
 
-    for (unsigned i = 0; i < state.size(); i+=2){
+    for (unsigned i = 0; i < state.size(); i+=1){
+        Particle particle = state[i];
+        Vector3f position = particle.getPosition();
+        Vector3f velocity = particle.getVelocity();
 
-        Vector3f position = state[i];
-        Vector3f velocity = state[i+1];
-
-        // Gravity, Drag, and Wind
+        // Gravity
         Vector3f totalForce =  gravityForce;
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
 
-        f.push_back(velocity);
-        f.push_back(acceleration);
+        Particle newParticle = Particle(i, velocity, acceleration);
+        f.push_back(newParticle);
     }
 
     return f;
@@ -109,10 +111,11 @@ void ClothSystem::draw(GLProgram& gl)
     // not working :(
     gl.updateMaterial(blue);
 
-    for (unsigned i = 0; i < m_vVecState.size(); i+=2){
-        Vector3f pos = m_vVecState[i];
+    for (unsigned i = 0; i < m_vVecState.size(); i+=1){
+        Particle p = m_vVecState[i];
+        Vector3f pos = p.getPosition();
         gl.updateModelMatrix(Matrix4f::translation(pos));
-        drawSphere(PARTICLE_RADIUS, 10, 4);
+        drawSphere(PARTICLE_RADIUS, 5, 4);
     }
 
     gl.enableLighting(); // reset to default lighting model
