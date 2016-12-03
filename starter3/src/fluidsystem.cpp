@@ -2,15 +2,18 @@
 #include "camera.h"
 #include "vertexrecorder.h"
 #include <iostream>
+#include <math.h>
 #include "particle.h"
 
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 10;
+const int N = 5;
 
 const float PARTICLE_SPACING = .08;
 const float PARTICLE_RADIUS = .03;
+const int H = 3 * PARTICLE_RADIUS;
+
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = .03; // kg 
@@ -60,22 +63,56 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
     // F = mg  -> GRAVITY
     // ----------------------------------------
-    float gForce = PARTICLE_MASS*GRAVITY*0;
+    float gForce = PARTICLE_MASS*GRAVITY;
     // only in the y-direction
     Vector3f gravityForce = Vector3f(0,-gForce, 0);
     // ----------------------------------------
+    float kernel_constant_density = 315.0 / (64.0 * M_PI * pow(H, 9));
+    float kernel_constant_pressure = -45.0 / (M_PI * pow(H, 6));
 
     for (unsigned i = 0; i < state.size(); i+=1){
         Particle particle = state[i];
         Vector3f position = particle.getPosition();
         Vector3f velocity = particle.getVelocity();
+        float density = particle.getDensity();
+        Vector3f pressure = particle.getPressure();
+
+        // compute updated density and gradient of pressure
+        // based on all other particles
+        float density_i = 0;
+        Vector3f grad_pressure;
+        for (unsigned j = 0; j < state.size(); j+=1) {
+            Particle particle_j = state[j];
+            if (j != i) {
+                Vector3f delta = position - particle_j.getPosition();
+
+                // desnity computation
+                float kernel_distance_density = pow((H*H - delta.absSquared()), 3);
+                density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
+
+                // gradient of pressure computation
+                Vector3f p_factor = pressure/(density*density) + particle_j.getPressure()/(particle_j.getDensity()*particle_j.getDensity());
+                Vector3f kernel_distance_pressure = pow((H - delta.absSquared()), 2) * delta / delta.abs();
+
+                grad_pressure += PARTICLE_MASS*p_factor*kernel_constant_pressure*kernel_distance_pressure;
+            }
+
+
+        }
+
 
         // Gravity
         Vector3f totalForce =  gravityForce;
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
 
+        if (position.y() < -0.95){
+            velocity = Vector3f(velocity.x(), 0, velocity.z());
+        }
+
         Particle newParticle = Particle(i, velocity, acceleration);
+        newParticle.setDensity(density_i);
+        // newParticle.setPressure(density_i);
         f.push_back(newParticle);
     }
 
