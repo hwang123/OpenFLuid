@@ -21,4 +21,6 @@ Particle::Particle(int id, const Vector3f position, const Vector3f velocity)
 	_id = id;
     _position = position;
     _velocity = velocity;
+    _density = 1.0;
+    _viscosity = Vector3f(1.0);
 }

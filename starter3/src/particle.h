@@ -9,6 +9,7 @@
 // helper for uniform distribution
 float rand_uniform(float low, float hi);
 
+
 struct GLProgram;
 class Particle
 {
@@ -28,10 +29,12 @@ public:
     float getDensity() { return _density; };
 
     // getter method for the particle's pressure
-    Vector3f getPressure() { return _pressure; };
+    float getPressure() { return K*(_density-density_0); };
 
     // getter method for the particle's neighbors
     std::vector<int> getNeighbors() { return _neighbors; };
+
+    Vector3f getViscosity() { return _viscosity; };
 
     // setter method for the system's position
     void setPosition(const Vector3f newPosition) { _position = newPosition; };
@@ -42,9 +45,6 @@ public:
     // setter method for the system's density
     void setDensity(const float newDensity) { _density = newDensity; };
 
-    // setter method for the system's pressure
-    void setPressure(const Vector3f newPressure) { _pressure = newPressure; };
-
     // setter method for the system's position
     void setNeighbors(const std::vector<int> newNeighbors ) { _neighbors = newNeighbors; };
 
@@ -53,10 +53,13 @@ public:
       // member variables
     int _id;
     float _density;
-    Vector3f _pressure;
     Vector3f _velocity;
     Vector3f _position;
     std::vector<int> _neighbors; 
+    Vector3f _viscosity;
+
+    float density_0 = 0.01;
+    float K = 1.0;
 };
 
 #endif
