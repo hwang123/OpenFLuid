@@ -77,6 +77,31 @@ void Trapezoidal::takeStep(ParticleSystem* particleSystem, float stepSize)
 
 void RK4::takeStep(ParticleSystem* particleSystem, float stepSize)
 {
+	// LEAP FROG INTERGRATOR
+
+	vector<Particle> new_state;
+
+	vector<Particle> X = particleSystem->getState();
+	vector<Particle> X_prime = particleSystem->evalF(X);
+
+	Vector3f newPos = Vector3f();
+	Vector3f newVel = Vector3f();
+
+	for (int i = 0; i < X.size(); i++){
+		Particle particle = X[i];
+
+		newPos = particle.getPosition() + stepSize*X_prime[i].getPosition() + 0.5*stepSize*stepSize*X_prime[i].getVelocity();
+		newVel = particle.getVelocity() + 0.5*stepSize*(X_prime[i].getVelocity()+X_prime[i].getVelocity());
+
+		Particle new_particle = Particle(i, newPos, newVel);
+
+		new_state.push_back(new_particle);
+	}
+
+	particleSystem->setState(new_state);
+
+}
+
 // 	vector<Vector3f> X = particleSystem->getState();
 // 	vector<Vector3f> k1 = particleSystem->evalF(X);
 // 	vector<Vector3f> finalState;
@@ -122,6 +147,3 @@ void RK4::takeStep(ParticleSystem* particleSystem, float stepSize)
 // 	}	
 
 // 	particleSystem->setState(finalState);
-
-}
-

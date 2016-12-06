@@ -12,7 +12,7 @@ const int N = 5;
 
 const float PARTICLE_SPACING = .2;
 const float PARTICLE_RADIUS = PARTICLE_SPACING/2.0;
-const int H = PARTICLE_RADIUS;
+const float H = 1.2;
 const float viscosity = 0.5;
 
 const float SPRING_CONSTANT = 5; // N/m
@@ -72,7 +72,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
     // -45/[pi*h^6]
     float kernel_constant_pressure = -45.0 / (M_PI * pow(H, 6));
 
-    for (unsigned i = 0; i < state.size(); i+=1){
+    for (unsigned i = 0; i < m_vVecState.size(); i+=1){
         Particle particle = state[i];
         Vector3f position = particle.getPosition();
         Vector3f velocity = particle.getVelocity();
@@ -96,9 +96,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 if (delta.abs() < H) {
                     kernel_distance_density = 0;
                 }
-                cout << kernel_distance_density << endl;
                 density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
-
                 //  ---------------gradient of pressure computation-----------------
 
                 // Mueller value: (pi + pj) / 2pj
@@ -127,7 +125,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
 
         // Total Force
-        Vector3f totalForce = gravityForce - f_pressure + (viscosity / density_i * f_viscosity);
+        Vector3f totalForce = gravityForce + f_pressure + f_viscosity;
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
 
@@ -137,7 +135,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
 
         Particle newParticle = Particle(i, velocity, acceleration);
-        newParticle.setDensity(density_i);
         newParticle.setDensity(density_i);
         f.push_back(newParticle);
     }
