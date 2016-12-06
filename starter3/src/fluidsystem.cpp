@@ -13,7 +13,7 @@ const int N = 5;
 const float PARTICLE_SPACING = .2;
 const float PARTICLE_RADIUS = PARTICLE_SPACING/2.0;
 const int H = PARTICLE_RADIUS;
-
+const float viscosity = 0.5;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = .03; // kg 
@@ -78,7 +78,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Vector3f velocity = particle.getVelocity();
         float density = particle.getDensity();
 
-        Vector3f viscosity = particle.getViscosity();
         float pressure = particle.getPressure();
 
         // compute updated density and gradient of pressure
@@ -107,14 +106,16 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
                 // (h-d)^2 * d/|d|
                 Vector3f kernel_distance_pressure = pow((H - delta.absSquared()), 2) * delta / delta.abs();
-
+                if (delta.abs() < H) {
+                    kernel_distance_pressure = Vector3f(0.0);
+                }
                 f_pressure += PARTICLE_MASS*p_factor*kernel_constant_pressure*kernel_distance_pressure;
                 //  ---------------viscosity computation-----------------
                 float kernel_distance_viscosity = H-delta.abs();
                 if (delta.abs() < H) {
                     kernel_distance_viscosity = 0;
                 }
-                Vector3f v_factor = (particle_j.getViscosity() - viscosity) / particle_j.getDensity();
+                Vector3f v_factor = (particle_j.getVelocity() - velocity) / particle_j.getDensity();
 
                 f_viscosity += PARTICLE_MASS*v_factor*-1.0*kernel_constant_pressure*kernel_distance_viscosity;
 
@@ -126,7 +127,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
 
         // Total Force
-        Vector3f totalForce = gravityForce - f_pressure + f_viscosity;
+        Vector3f totalForce = gravityForce - f_pressure + (viscosity / density_i * f_viscosity);
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
 
@@ -136,6 +137,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
 
         Particle newParticle = Particle(i, velocity, acceleration);
+        newParticle.setDensity(density_i);
         newParticle.setDensity(density_i);
         f.push_back(newParticle);
     }

@@ -34,8 +34,6 @@ public:
     // getter method for the particle's neighbors
     std::vector<int> getNeighbors() { return _neighbors; };
 
-    Vector3f getViscosity() { return _viscosity; };
-
     // setter method for the system's position
     void setPosition(const Vector3f newPosition) { _position = newPosition; };
 
@@ -56,7 +54,6 @@ public:
     Vector3f _velocity;
     Vector3f _position;
     std::vector<int> _neighbors; 
-    Vector3f _viscosity;
 
     float density_0 = 0.01;
     float K = 1.0;
