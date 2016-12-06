@@ -94,6 +94,10 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
                 //  ---------------density computation-----------------
                 float kernel_distance_density = pow((H*H - delta.absSquared()), 3);
+                if (delta.abs() < H) {
+                    kernel_distance_density = 0;
+                }
+                cout << kernel_distance_density << endl;
                 density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
 
                 //  ---------------gradient of pressure computation-----------------
@@ -107,6 +111,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 f_pressure += PARTICLE_MASS*p_factor*kernel_constant_pressure*kernel_distance_pressure;
                 //  ---------------viscosity computation-----------------
                 float kernel_distance_viscosity = H-delta.abs();
+                if (delta.abs() < H) {
+                    kernel_distance_viscosity = 0;
+                }
                 Vector3f v_factor = (particle_j.getViscosity() - viscosity) / particle_j.getDensity();
 
                 f_viscosity += PARTICLE_MASS*v_factor*-1.0*kernel_constant_pressure*kernel_distance_viscosity;
