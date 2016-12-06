@@ -10,8 +10,8 @@ using namespace std;
  // your system should at least contain 8x8 particles.
 const int N = 5;
 
-const float PARTICLE_SPACING = .08;
-const float PARTICLE_RADIUS = .03;
+const float PARTICLE_SPACING = .2;
+const float PARTICLE_RADIUS = PARTICLE_SPACING/2.0;
 const int H = 3 * PARTICLE_RADIUS;
 
 
@@ -86,7 +86,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             if (j != i) {
                 Vector3f delta = position - particle_j.getPosition();
 
-                // desnity computation
+                // density computation
                 float kernel_distance_density = pow((H*H - delta.absSquared()), 3);
                 density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
 
