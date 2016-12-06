@@ -10,13 +10,14 @@ using namespace std;
  // your system should at least contain 8x8 particles.
 const int N = 5;
 
-const float PARTICLE_SPACING = .2;
-const float PARTICLE_RADIUS = PARTICLE_SPACING/2.0;
-const float H = 1.1;
-const float mu = 0.0001;
+const float PARTICLE_RADIUS = .05;
+const float PARTICLE_SPACING = .2*PARTICLE_RADIUS;
+
+const float H = .15;//0.8;
+const float mu = 3.5;//0.001;
 
 const float SPRING_CONSTANT = 5; // N/m
-const float PARTICLE_MASS = .03; // kg 
+const float PARTICLE_MASS = 0.02;//.03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
@@ -35,8 +36,8 @@ FluidSystem::FluidSystem()
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
                 // all particles stationary
-                Vector3f velocity = Vector3f( rand_uniform(-1,  1), rand_uniform(-1,  1), rand_uniform( -1, 1));
-                // Vector3f velocity = Vector3f(0);
+                // Vector3f velocity = Vector3f( rand_uniform(-1,  1), rand_uniform(-1,  1), rand_uniform( -1, 1));
+                Vector3f velocity = Vector3f(0);
 
                 Particle particle = Particle(particleCount, position, velocity);
                 m_vVecState.push_back(particle);
@@ -90,33 +91,28 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             if (j != i) {
                 Particle particle_j = state[j];
 
-                Vector3f delta = position - particle_j.getPosition();
+                Vector3f delta = position - particle_j.getPosition() - Vector3f(2 * PARTICLE_RADIUS);
+                if (delta.absSquared() < H*H) {
+                    //  ---------------density computation-----------------
+                    float kernel_distance_density = pow((H*H - delta.absSquared()), 3);
+                                    
+                    density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
+                    //  ---------------gradient of pressure computation-----------------
 
-                //  ---------------density computation-----------------
-                float kernel_distance_density = pow((H*H - delta.absSquared()), 3);
-                if (delta.abs() < H) {
-                    kernel_distance_density = 0;
-                }
-                density_i += PARTICLE_MASS*kernel_constant_density*kernel_distance_density;
-                //  ---------------gradient of pressure computation-----------------
+                    // Mueller value: (pi + pj) / 2pj
+                    float p_factor = (pressure+particle_j.getPressure()) / (2*particle_j.getDensity()); 
+                    // float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
+                    // (h-d)^2 * d/|d|
+                    Vector3f kernel_distance_pressure = pow((H - delta.absSquared()), 2) * delta / delta.abs();
 
-                // Mueller value: (pi + pj) / 2pj
-                float p_factor = (pressure+particle_j.getPressure()) / (2*particle_j.getDensity()); 
-                // float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
-                // (h-d)^2 * d/|d|
-                Vector3f kernel_distance_pressure = pow((H - delta.absSquared()), 2) * delta / delta.abs();
-                if (delta.abs() < H) {
-                    kernel_distance_pressure = Vector3f(0.0);
-                }
-                f_pressure += PARTICLE_MASS*p_factor*kernel_constant_pressure*kernel_distance_pressure;
-                //  ---------------viscosity computation-----------------
-                float kernel_distance_viscosity = H-delta.abs();
-                if (delta.abs() < H) {
-                    kernel_distance_viscosity = 0;
-                }
-                Vector3f v_factor = (particle_j.getVelocity() - velocity) / particle_j.getDensity();
+                    f_pressure += PARTICLE_MASS*p_factor*kernel_constant_pressure*kernel_distance_pressure;
+                    //  ---------------viscosity computation-----------------
+                    float kernel_distance_viscosity = H-delta.abs();
 
-                f_viscosity += PARTICLE_MASS*v_factor*-1.0*kernel_constant_pressure*kernel_distance_viscosity;
+                    Vector3f v_factor = (particle_j.getVelocity() - velocity) / particle_j.getDensity();
+
+                    f_viscosity += PARTICLE_MASS*v_factor*-1.0*kernel_constant_pressure*kernel_distance_viscosity;
+                }
                 // cout << v_factor << endl;
                 // v_factor.print();
 
