@@ -29,10 +29,5 @@ class RK4 : public TimeStepper
 	void takeStep(ParticleSystem* particleSystem, float stepSize) override;
 };
 
-class LeapFrog : public TimeStepper
-{
-	void takeStep(ParticleSystem* particleSystem, float stepSize) override;
-};
-
 /////////////////////////
 #endif

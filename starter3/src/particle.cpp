@@ -21,5 +21,4 @@ Particle::Particle(int id, const Vector3f position, const Vector3f velocity)
 	_id = id;
     _position = position;
     _velocity = velocity;
-    _density = 998.29;
 }
