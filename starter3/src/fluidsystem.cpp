@@ -12,9 +12,11 @@ using namespace std;
 const int N = 5;
 
 const float PARTICLE_RADIUS = .015;
-const float PARTICLE_SPACING = .02;
+const float PARTICLE_SPACING = .0205;
 
 const float H = .0457;
+const float Hsquared = H*H;
+const float Hfouth = Hsquared*Hsquared;
 const float mu = 3.5;//0.001;
 
 const float SPRING_CONSTANT = 5; // N/m
@@ -85,19 +87,19 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Vector3f position = particle.getPosition();
         Vector3f velocity = particle.getVelocity();
         // compute density of every particle first
-        float density_i = 0;
+        double density_i = 0;
         for (unsigned j = 0; j < state.size(); j+=1) {
             if (j != i) {
                 Particle particle_j = state[j];
 
                 Vector3f delta = position - particle_j.getPosition();
                 if (delta.absSquared() < H*H) {
-                    density_i += PARTICLE_MASS*WPoly6(delta);
+                    density_i += WPoly6(delta);
                     // cout << WPoly6(delta) << endl;
                 }
             }
         }
-        particle.density() = density_i;
+        particle.density() = PARTICLE_MASS*density_i;
         // cout << density_i << endl;
 
     }
@@ -106,7 +108,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Particle particle = state[i];
         Vector3f position = particle.getPosition();
         Vector3f velocity = particle.getVelocity();
-        float density = particle.density();
+        double density = particle.density();
 
         // cout << density << endl;
 
@@ -145,7 +147,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
 
         // Total Force
-        Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
+        // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
+        Vector3f totalForce = gravityForce;
+        cout << density << endl;
         // totalForce.print();
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
@@ -156,27 +160,27 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             acceleration = Vector3f(1,-.5,1)*acceleration;
         }
 
-        if (position.x() < -0.95){
-            velocity = Vector3f(-1,1,1)* velocity;
-            acceleration = Vector3f(-1,1,1)*acceleration;
-        }
+        // if (position.x() < -0.95){
+        //     velocity = Vector3f(-1,1,1)* velocity;
+        //     acceleration = Vector3f(-1,1,1)*acceleration;
+        // }
 
-        if (position.x() > 0.95){
-            velocity = Vector3f(0, velocity.y(), velocity.z());
-            acceleration = Vector3f(-1,1,1)*acceleration;
-        }
+        // if (position.x() > 0.95){
+        //     velocity = Vector3f(0, velocity.y(), velocity.z());
+        //     acceleration = Vector3f(-1,1,1)*acceleration;
+        // }
 
-        if (position.z() < -0.95){
-            velocity = Vector3f(velocity.x(), velocity.y(), 0);
-            acceleration = Vector3f(1,1,-1)*acceleration;
-        }
+        // if (position.z() < -0.95){
+        //     velocity = Vector3f(velocity.x(), velocity.y(), 0);
+        //     acceleration = Vector3f(1,1,-1)*acceleration;
+        // }
 
-        if (position.z() > 0.95){
-            velocity = Vector3f(velocity.x(), velocity.y(), 0);
-            acceleration = Vector3f(1,1,-1)*acceleration;
-        }
+        // if (position.z() > 0.95){
+        //     velocity = Vector3f(velocity.x(), velocity.y(), 0);
+        //     acceleration = Vector3f(1,1,-1)*acceleration;
+        // }
 
-        Particle newParticle = Particle(i, velocity, acceleration);
+        Particle newParticle = Particle(i, velocity, acceleration, density);
         f.push_back(newParticle);
     }
 
@@ -184,8 +188,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 }
 
 float WPoly6(Vector3f R){
-    float constant_term = 315.0 / (64.0 * M_PI * pow(H, 9));
-    float kernel_distance_density = pow((H*H - R.absSquared()), 3);
+    float constant_term = 315.0 / (64.0 * M_PI * Hfouth * Hfouth * H);
+    float factor = H*H - R.absSquared();
+    float kernel_distance_density = factor * factor * factor;
     return kernel_distance_density*constant_term;
 }
 
@@ -193,13 +198,14 @@ Vector3f WSpiky(Vector3f R){
     if (R.abs() < .1){
         return Vector3f(0,0,0);
     }
-    float constant_term = -45.0 / (M_PI * pow(H, 6));
-    Vector3f kernel_distance_pressure = pow((H - R.abs()), 2) * R.normalized();
+    float constant_term = -45.0 / (M_PI * Hfouth * Hsquared);
+    float factor = H*H - R.absSquared();
+    Vector3f kernel_distance_pressure = factor * factor * R.normalized();
     return constant_term * kernel_distance_pressure;
 }
 
 float WViscosity(Vector3f R){
-    float constant_term = 45.0 / (M_PI * pow(H, 6));
+    float constant_term = 45.0 / (M_PI * Hfouth * Hsquared);
     float kernel_distance_viscosity = H-R.abs();
     return constant_term * kernel_distance_viscosity;
 }

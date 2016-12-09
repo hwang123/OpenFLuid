@@ -23,6 +23,7 @@ public:
 	Particle(int id);
 	Particle(int id, const Vector3f position);
 	Particle(int id, const Vector3f position, const Vector3f velocity);
+    Particle(int id, const Vector3f position, const Vector3f velocity, const double density);
 
     // getter method for the particle's position
 	Vector3f getPosition() { return _position; };
@@ -31,7 +32,7 @@ public:
 	Vector3f getVelocity() { return _velocity; };
 
     // getter method for the particle's desnity
-    float getDensity() { return _density; };
+    double getDensity() { return _density; };
 
     // getter method for the particle's pressure
     float getPressure() { return K*(_density-density_0); };
@@ -46,9 +47,9 @@ public:
     void setVelocity(const Vector3f newVelocity) { _velocity = newVelocity; };
     
     // setter method for the system's density
-    void setDensity(const float newDensity) { _density = newDensity; };
+    void setDensity(const double newDensity) { _density = newDensity; };
 
-    float& density(){return _density;};
+    double& density(){return _density;};
 
     // setter method for the system's position
     void setNeighbors(const std::vector<int> newNeighbors ) { _neighbors = newNeighbors; };
@@ -57,7 +58,7 @@ public:
  protected:
       // member variables
     int _id;
-    float _density;
+    double _density;
     Vector3f _velocity;
     Vector3f _position;
     std::vector<int> _neighbors; 

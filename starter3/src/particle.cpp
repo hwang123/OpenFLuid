@@ -22,3 +22,10 @@ Particle::Particle(int id, const Vector3f position, const Vector3f velocity)
     _position = position;
     _velocity = velocity;
 }
+
+Particle::Particle(int id, const Vector3f position, const Vector3f velocity, const double density){
+	_id = id;
+    _position = position;
+    _velocity = velocity;
+    _density = density;	
+}
