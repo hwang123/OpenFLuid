@@ -164,36 +164,10 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density + f_collision;
-        Vector3f totalForce = gravityForce + f_collision;
+        Vector3f totalForce = gravityForce + f_collision + mu*f_viscosity*.00005;
         // totalForce.print();
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
-
-
-        // if (position.y() < -0.95){
-        //     velocity = Vector3f(1,0,1)* velocity;
-        //     acceleration = Vector3f(1,-.5,1)*acceleration;
-        // }
-
-        // if (position.x() < -0.95){
-        //     velocity = Vector3f(-1,1,1)* velocity;
-        //     acceleration = Vector3f(-1,1,1)*acceleration;
-        // }
-
-        // if (position.x() > 0.95){
-        //     velocity = Vector3f(0, velocity.y(), velocity.z());
-        //     acceleration = Vector3f(-1,1,1)*acceleration;
-        // }
-
-        // if (position.z() < -0.95){
-        //     velocity = Vector3f(velocity.x(), velocity.y(), 0);
-        //     acceleration = Vector3f(1,1,-1)*acceleration;
-        // }
-
-        // if (position.z() > 0.95){
-        //     velocity = Vector3f(velocity.x(), velocity.y(), 0);
-        //     acceleration = Vector3f(1,1,-1)*acceleration;
-        // }
 
         Particle newParticle = Particle(i, velocity, acceleration, density);
         f.push_back(newParticle);
@@ -275,7 +249,7 @@ void FluidSystem::draw(GLProgram& gl)
         Particle p = m_vVecState[i];
         Vector3f pos = p.getPosition();
         gl.updateModelMatrix(Matrix4f::translation(pos));
-        drawSphere(PARTICLE_RADIUS, 5, 4);
+        drawSphere(PARTICLE_RADIUS, 10, 4);
     }
 
     gl.enableLighting(); // reset to default lighting model
