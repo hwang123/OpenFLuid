@@ -12,7 +12,7 @@ using namespace std;
 const int N = 5;
 
 const float PARTICLE_RADIUS = .015;
-const float PARTICLE_SPACING = .0205;
+const float PARTICLE_SPACING = .0225;
 
 const float H = .0457;
 const float Hsquared = H*H;
@@ -109,11 +109,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Vector3f position = particle.getPosition();
         Vector3f velocity = particle.getVelocity();
         double density = particle.density();
-
-        // cout << density << endl;
-
         float pressure = particle.getPressure();
-
 
         // compute updated density and gradient of pressure
         // based on all other particles
@@ -127,11 +123,17 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 if (delta.absSquared() < H*H) {
                     //  ---------------gradient of pressure computation-----------------
 
+                    // sample implementation value: pi/roi2 + pj/roj2
+                    float p_factor = (pressure/(density*density)) + (particle_j.getPressure()/(particle_j.density()*particle_j.density())); 
+
                     // Mueller value: (pi + pj) / 2roj
-                    float p_factor = (pressure+particle_j.getPressure()) / (2*particle_j.getDensity()); 
+                    // float p_factor = (pressure+particle_j.getPressure()) / (2*particle_j.getDensity()); 
+
                     // Lecture video value: pi/roi + pj/roj
                     // float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
-                    f_pressure += PARTICLE_MASS*p_factor*WSpiky(delta);
+                    (WSpiky(delta)).print();
+                    // delta.print();
+                    f_pressure += p_factor*WSpiky(delta);
                     //  ---------------viscosity computation-----------------
                     float kernel_distance_viscosity = H-delta.abs();
 
@@ -146,10 +148,13 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             }
         }
 
+        f_pressure = PARTICLE_MASS * f_pressure;
+
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
         Vector3f totalForce = gravityForce;
-        cout << density << endl;
+        // f_pressure.print();
+        // cout << density << endl;
         // totalForce.print();
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
@@ -195,11 +200,11 @@ float WPoly6(Vector3f R){
 }
 
 Vector3f WSpiky(Vector3f R){
-    if (R.abs() < .1){
+    if (R.abs() < .000001){
         return Vector3f(0,0,0);
     }
     float constant_term = -45.0 / (M_PI * Hfouth * Hsquared);
-    float factor = H*H - R.absSquared();
+    float factor = H - R.abs();
     Vector3f kernel_distance_pressure = factor * factor * R.normalized();
     return constant_term * kernel_distance_pressure;
 }
