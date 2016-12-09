@@ -4,10 +4,15 @@
 #include <vector>
 #include <vecmath.h>
 #include <cstdint>
+#include <iostream>
+using namespace std;
+
+
 
 
 // helper for uniform distribution
 float rand_uniform(float low, float hi);
+
 
 
 struct GLProgram;
@@ -43,6 +48,8 @@ public:
     // setter method for the system's density
     void setDensity(const float newDensity) { _density = newDensity; };
 
+    float& density(){return _density;};
+
     // setter method for the system's position
     void setNeighbors(const std::vector<int> newNeighbors ) { _neighbors = newNeighbors; };
 
@@ -55,8 +62,8 @@ public:
     Vector3f _position;
     std::vector<int> _neighbors; 
 
-    float density_0 = 0.01;
-    float K = 1.0;
+    float density_0 = 998.29;
+    float K = 3.0;
 };
 
 #endif
