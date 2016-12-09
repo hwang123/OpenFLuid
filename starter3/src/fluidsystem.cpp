@@ -12,7 +12,7 @@ using namespace std;
 const int N = 5;
 
 const float PARTICLE_RADIUS = .015;
-const float PARTICLE_SPACING = .0205;
+const float PARTICLE_SPACING = .025;
 
 const float H = .0457;
 const float Hsquared = H*H;
@@ -23,6 +23,10 @@ const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
+
+const float WALL_K = 50.0; // wall spring constant
+const float WALL_DAMPING = -0.9; // wall damping constant
+
 
 float WPoly6(Vector3f R);
 Vector3f WSpiky(Vector3f R);
@@ -146,19 +150,21 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             }
         }
 
+        Vector3f f_collision = collisionForce(particle);
+
         // Total Force
-        // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
-        Vector3f totalForce = gravityForce;
+        // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density + f_collision;
+        Vector3f totalForce = gravityForce + f_collision;
         cout << density << endl;
         // totalForce.print();
 
         Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
 
 
-        if (position.y() < -0.95){
-            velocity = Vector3f(1,0,1)* velocity;
-            acceleration = Vector3f(1,-.5,1)*acceleration;
-        }
+        // if (position.y() < -0.95){
+        //     velocity = Vector3f(1,0,1)* velocity;
+        //     acceleration = Vector3f(1,-.5,1)*acceleration;
+        // }
 
         // if (position.x() < -0.95){
         //     velocity = Vector3f(-1,1,1)* velocity;
@@ -209,6 +215,23 @@ float WViscosity(Vector3f R){
     float kernel_distance_viscosity = H-R.abs();
     return constant_term * kernel_distance_viscosity;
 }
+
+
+Vector3f FluidSystem::collisionForce(Particle particle) {
+    Vector3f f_collision;
+    for (unsigned int i = 0; i < _walls.size(); i++) {
+
+        Wall wall = _walls[i];
+        Vector3f wallNormal = wall.getNormal();
+        double d = Vector3f::dot(wallNormal, (wall.getPoint() - particle.getPosition())) + PARTICLE_RADIUS; // particle radius
+
+        if (d > 0.0) {      
+            f_collision += WALL_DAMPING * Vector3f::dot(wallNormal, particle.getVelocity()) * wallNormal + WALL_K * wallNormal * d;
+        }
+    }
+    return f_collision;
+}
+
 
 void FluidSystem::draw(GLProgram& gl)
 {
