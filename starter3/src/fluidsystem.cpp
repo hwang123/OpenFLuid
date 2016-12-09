@@ -11,34 +11,20 @@ using namespace std;
  // your system should at least contain 8x8 particles.
 const int N = 5;
 
-<<<<<<< HEAD
-const float PARTICLE_RADIUS = .1;
-const float PARTICLE_SPACING = 2*PARTICLE_RADIUS;
-
-const float BOX_SIZE = 2;
-
-const float H = 0.1;
-const float mu = 1;
-=======
 const float PARTICLE_RADIUS = .015;
 const float PARTICLE_SPACING = .02;
 
 const float H = .0457;
 const float mu = 3.5;//0.001;
->>>>>>> 9dd08cd861ada6137c7a0281dcc3a7312aabd6b9
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
-<<<<<<< HEAD
-Vector3f boxSize;
-=======
 float WPoly6(Vector3f R);
 Vector3f WSpiky(Vector3f R);
 float WViscosity(Vector3f R);
->>>>>>> 9dd08cd861ada6137c7a0281dcc3a7312aabd6b9
 
 FluidSystem::FluidSystem()
 {
@@ -111,11 +97,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 }
             }
         }
+        particle.density() = density_i;
+        // cout << density_i << endl;
 
-        if (density_i > 100){
-            particle.density() = density_i;
-            // cout << density_i << endl;
-        }
     }
 
     for (unsigned i = 0; i < m_vVecState.size(); i+=1){
@@ -124,7 +108,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Vector3f velocity = particle.getVelocity();
         float density = particle.density();
 
-        cout << density << endl;
+        // cout << density << endl;
 
         float pressure = particle.getPressure();
 
