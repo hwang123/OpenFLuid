@@ -20,6 +20,10 @@ public:
     // draw is called once per frame
     void draw(GLProgram& ctx);
 
+    Vector3f collisionForce(Particle particle);
+
+	std::vector<Wall> getWalls() { return _walls; };
+	
     // inherits
     // std::vector<Vector3f> m_vVecState;
 
