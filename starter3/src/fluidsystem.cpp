@@ -4,26 +4,38 @@
 #include <iostream>
 #include <math.h>
 #include "particle.h"
+#include "wall.h"
 
 using namespace std;
 
  // your system should at least contain 8x8 particles.
 const int N = 5;
 
-const float PARTICLE_RADIUS = .05;
-const float PARTICLE_SPACING = .2*PARTICLE_RADIUS;
+const float PARTICLE_RADIUS = .1;
+const float PARTICLE_SPACING = 2*PARTICLE_RADIUS;
 
-const float H = .15;//0.8;
-const float mu = 3.5;//0.001;
+const float BOX_SIZE = 2;
+
+const float H = 0.1;
+const float mu = 1;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
+Vector3f boxSize;
+
 FluidSystem::FluidSystem()
 {
-    // TODO 5. Initialize m_vVecState with cloth particles. 
+    // back, front, left, right, bottom - respectively
+    _walls.push_back(Wall(Vector3f(0,-0.5,-1), Vector3f(0,0,1)));
+    _walls.push_back(Wall(Vector3f(0,-0.5,1), Vector3f(0,0,-1)));
+    _walls.push_back(Wall(Vector3f(-1,-0.5,0), Vector3f(1,0,0)));
+    _walls.push_back(Wall(Vector3f(1,-0.5,0), Vector3f(-1,0,0)));
+    _walls.push_back(Wall(Vector3f(0,-1,0), Vector3f(0,1,0)));
+
+    // Initialize m_vVecState with fluid particles. 
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
     int particleCount = 0;
@@ -52,16 +64,14 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 {
 
     std::vector<Particle> f;
-    // TODO 5. implement evalF
+    // FLuid Particles undergo the following forces:
     // - gravity
     // - viscous drag
-    // - structural springs
-    // - shear springs
-    // - flexion springs
-    // Particle p = Particle(4.0, Vector3f(0,0,0), Vector3f(0,0,0));
+    // - pressure
+    // ---Below Not Implemented---
+    // - surface tension
+    // - collision forces
 
-
-    // Gravity and Wind will be independent of the particle in question
 
     // F = mg  -> GRAVITY
     // ----------------------------------------

@@ -5,6 +5,8 @@
 
 #include "particlesystem.h"
 #include "particle.h"
+#include "wall.h"
+
 
 class FluidSystem : public ParticleSystem
 {
@@ -20,6 +22,9 @@ public:
 
     // inherits
     // std::vector<Vector3f> m_vVecState;
+
+protected:
+	std::vector<Wall> _walls;
 
 };
 

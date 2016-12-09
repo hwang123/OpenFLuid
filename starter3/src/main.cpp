@@ -220,13 +220,6 @@ void drawSystem()
     gl.updateModelMatrix(Matrix4f::translation(0, 0, 0));
     gl.updateMaterial(BOX_COLOR);
     drawBox(Vector3f(0,0,0),1);
-
-    // set uniforms for floor
-    gl.updateMaterial(FLOOR_COLOR);
-    gl.updateModelMatrix(Matrix4f::translation(0, -5.0f, 0));
-    // draw floor
-    drawQuad(50.0f);
-
 }
 
 //-------------------------------------------------------------------
