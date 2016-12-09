@@ -34,12 +34,14 @@ float WViscosity(Vector3f R);
 
 FluidSystem::FluidSystem()
 {
+    // change box size - make sure this is the same as in main.cpp
+    float len = 0.1;
     // back, front, left, right, bottom - respectively
-    _walls.push_back(Wall(Vector3f(0,-0.5,-1), Vector3f(0,0,1)));
-    _walls.push_back(Wall(Vector3f(0,-0.5,1), Vector3f(0,0,-1)));
-    _walls.push_back(Wall(Vector3f(-1,-0.5,0), Vector3f(1,0,0)));
-    _walls.push_back(Wall(Vector3f(1,-0.5,0), Vector3f(-1,0,0)));
-    _walls.push_back(Wall(Vector3f(0,-1,0), Vector3f(0,1,0)));
+    _walls.push_back(Wall(Vector3f(0,-len/2,-len), Vector3f(0,0,1)));
+    _walls.push_back(Wall(Vector3f(0,-len/2,len), Vector3f(0,0,-1)));
+    _walls.push_back(Wall(Vector3f(-len,-len/2,0), Vector3f(1,0,0)));
+    _walls.push_back(Wall(Vector3f(len,-len/2,0), Vector3f(-1,0,0)));
+    _walls.push_back(Wall(Vector3f(0,-len,0), Vector3f(0,1,0)));
 
     // Initialize m_vVecState with fluid particles. 
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
@@ -49,7 +51,7 @@ FluidSystem::FluidSystem()
         for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = i*PARTICLE_SPACING;
-                float y = j*PARTICLE_SPACING;
+                float y = 1 + j*PARTICLE_SPACING;
                 float z = l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
