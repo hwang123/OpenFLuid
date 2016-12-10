@@ -25,7 +25,7 @@ const float PARTICLE_MASS = 0.02;//.03; // kg
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
-const float WALL_K = 40.0; // wall spring constant
+const float WALL_K = 30.0; // wall spring constant
 const float WALL_DAMPING = -0.9; // wall damping constant
 
 
@@ -165,11 +165,11 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density + f_collision;
-        Vector3f totalForce = gravityForce + f_collision + f_pressure*0.0000001;
-        cout << f_pressure.x() << f_pressure.y() << f_pressure.z() << endl;
+        Vector3f totalForce = gravityForce;// + f_collision;//f_pressure*0.0000001;
+        // cout << f_pressure.x() << f_pressure.y() << f_pressure.z() << endl;
         // totalForce.print();
 
-        Vector3f acceleration = (1.0/PARTICLE_MASS)*totalForce;
+        Vector3f acceleration = totalForce / PARTICLE_MASS;
 
         Particle newParticle = Particle(i, velocity, acceleration, density);
         f.push_back(newParticle);
