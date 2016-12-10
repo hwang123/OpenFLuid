@@ -91,7 +91,8 @@ void RK4::takeStep(ParticleSystem* particleSystem, float stepSize)
 		Particle particle = X[i];
 
 		newPos = particle.getPosition() + stepSize*X_prime[i].getPosition() + 0.5*stepSize*stepSize*X_prime[i].getVelocity();
-		newVel = particle.getVelocity() + 0.5*stepSize*(X_prime[i].getVelocity()+X_prime[i].getVelocity());
+		newVel = (newPos - particle.getPosition()) / stepSize;
+		// newVel = particle.getVelocity() + 0.5*stepSize*(X_prime[i].getVelocity()+X_prime[i].getVelocity());
 
 		Particle new_particle = Particle(i, newPos, newVel);
 

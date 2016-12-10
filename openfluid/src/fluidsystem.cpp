@@ -165,7 +165,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density + f_collision;
-        Vector3f totalForce = gravityForce;// + f_collision;//f_pressure*0.0000001;
+        Vector3f totalForce = gravityForce + f_collision;//f_pressure*0.0000001;
         // cout << f_pressure.x() << f_pressure.y() << f_pressure.z() << endl;
         // totalForce.print();
 
