@@ -15,18 +15,18 @@ const int N = 5;
 const float PARTICLE_RADIUS = .015;
 const float PARTICLE_SPACING = .0225;
 
-const float H = .0457;
+const float H = 0.03;//.0457;
 const float Hsquared = H*H;
 const float Hfouth = Hsquared*Hsquared;
-const float mu = 3.5;//0.001;
+const float mu = .35;//0.001;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
 const float GRAVITY = 9.8; // m/s
 const float DRAG_CONSTANT = .05;
 
-const float WALL_K = 30.0; // wall spring constant
-const float WALL_DAMPING = -0.9; // wall damping constant
+const float WALL_K = 100.0; // wall spring constant
+const float WALL_DAMPING = -0.15; // wall damping constant
 
 
 float WPoly6(Vector3f R);
@@ -51,9 +51,9 @@ FluidSystem::FluidSystem()
     for (unsigned i = 0; i < N; i++){
         for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
-                float x = i*PARTICLE_SPACING;
-                float y = 1 + j*PARTICLE_SPACING;
-                float z = l*PARTICLE_SPACING;
+                float x = -len + i*PARTICLE_SPACING;
+                float y = 0.2 + -len + j*PARTICLE_SPACING;
+                float z = -len + l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
                 // all particles stationary
@@ -126,7 +126,8 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             if (j != i) {
                 Particle particle_j = state[j];
 
-                Vector3f delta = position - particle_j.getPosition() - Vector3f(2 * PARTICLE_RADIUS);
+                Vector3f delta = position - particle_j.getPosition() + Vector3f(2 * PARTICLE_RADIUS);
+                // cout << "delta" << delta.x() << ","<< delta.y() << ","<< delta.z() << endl;
                 if (delta.absSquared() < H*H) {
                     //  ---------------gradient of pressure computation-----------------
 
@@ -146,7 +147,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
                     Vector3f v_factor = (particle_j.getVelocity() - velocity) / particle_j.getDensity();
 
-                    Vector3f viscosity_term = PARTICLE_MASS*WViscosity(delta)*v_factor;
+                    Vector3f viscosity_term = PARTICLE_MASS*WViscosity(delta)/ particle_j.getDensity()*v_factor;
                     // cout << "delta " << kernel_constant_pressure << endl;
                     // viscosity_term.print();
                     f_viscosity += viscosity_term;
@@ -155,7 +156,8 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             }
         }
 
-        f_pressure = PARTICLE_MASS * f_pressure;
+        f_pressure *= PARTICLE_MASS;
+        f_viscosity *= mu * PARTICLE_MASS;
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
@@ -164,9 +166,11 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         Vector3f f_collision = collisionForce(particle);
 
         // Total Force
-        // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density + f_collision;
-        Vector3f totalForce = gravityForce + f_collision;//f_pressure*0.0000001;
-        // cout << f_pressure.x() << f_pressure.y() << f_pressure.z() << endl;
+        Vector3f totalForce = gravityForce + f_collision + f_viscosity*mu*0.0000;
+        // Vector3f totalForce = gravityForce + f_collision ;//+ f_pressure;
+        cout << "f_collision: " << f_collision.x() << ","<< f_collision.y() << ","<< f_collision.z() << endl;
+        // cout << "f_pressure: " << f_pressure.x() << ","<< f_pressure.y() << ","<< f_pressure.z() << endl;
+        // cout << "gravityForce: " << gravityForce.x() << ","<< gravityForce.y() << ","<< gravityForce.z() << endl;
         // totalForce.print();
 
         Vector3f acceleration = totalForce / PARTICLE_MASS;
@@ -180,7 +184,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
 float WPoly6(Vector3f R){
     float constant_term = 315.0 / (64.0 * M_PI * Hfouth * Hfouth * H);
-    float factor = H*H - R.absSquared();
+    float factor = Hsquared - R.absSquared();
     float kernel_distance_density = factor * factor * factor;
     return kernel_distance_density*constant_term;
 }
@@ -208,8 +212,7 @@ Vector3f FluidSystem::collisionForce(Particle particle) {
 
         Wall wall = _walls[i];
         Vector3f wallNormal = wall.getNormal();
-        double d = Vector3f::dot(wallNormal, (wall.getPoint() - particle.getPosition())) + PARTICLE_RADIUS; // particle radius
-
+        double d = Vector3f::dot(wallNormal, (wall.getPoint() - particle.getPosition())) +  0.015; // particle radius
         if (d > 0.0) {      
             f_collision += WALL_DAMPING * Vector3f::dot(wallNormal, particle.getVelocity()) * wallNormal + WALL_K * wallNormal * d;
         }
