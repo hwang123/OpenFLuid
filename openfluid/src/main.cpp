@@ -258,7 +258,7 @@ int main(int argc, char** argv)
     printf("Using Integrator %c with time step %.4f\n", integrator, h);
 
 
-    GLFWwindow* window = createOpenGLWindow(1024, 1024, "Assignment 3");
+    GLFWwindow* window = createOpenGLWindow(1024, 1024, "Open FLuid");
 
     // setup the event handlers
     glfwSetKeyCallback(window, keyCallback);
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
 
     camera.SetDimensions(600, 600);
     camera.SetPerspective(50);
-    camera.SetDistance(10);
+    camera.SetDistance(1);
 
     // Setup particle system
     initSystem();
