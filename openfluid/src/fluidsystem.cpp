@@ -18,7 +18,7 @@ const float PARTICLE_SPACING = .0225;
 const float H = 0.03;//.0457;
 const float Hsquared = H*H;
 const float Hfouth = Hsquared*Hsquared;
-const float mu = .35;//0.001;
+const float mu = .0021;//0.001;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
@@ -52,7 +52,7 @@ FluidSystem::FluidSystem()
         for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = -len + i*PARTICLE_SPACING;
-                float y = 0.05 + -len + j*PARTICLE_SPACING;
+                float y = 0.001 + -len + j*PARTICLE_SPACING;
                 float z = -len + l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
@@ -66,6 +66,23 @@ FluidSystem::FluidSystem()
             }
         }
     }
+
+    // for (unsigned i = 0; i < N; i++){
+    //     for (unsigned j = 0; j< N; j++){
+    //         float x = -len + i*PARTICLE_SPACING;
+    //         float y = .1;
+    //         float z = -len + j*PARTICLE_SPACING;
+    //         // particles evenly spaced
+    //         Vector3f position = Vector3f(x, y, z);
+    //         // all particles stationary
+    //         // Vector3f velocity = Vector3f( rand_uniform(-1,  1), 0, rand_uniform( -1, 1));
+    //         Vector3f velocity = Vector3f(0);
+
+    //         Particle particle = Particle(particleCount, position, velocity);
+    //         m_vVecState.push_back(particle);
+    //         particleCount += 1;
+    //     }
+    // }
 }
 
 
@@ -109,9 +126,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         particle.density() = .001+PARTICLE_MASS*density_i;
         // cout <<particle.density() << endl;
 
-        if (particle.density() < 50){
-        particle.density() = 500;
-        }
+        // if (particle.density() < 50){
+        // particle.density() = 500;
+        // }
         // cout << density_i << endl;
 
     }
@@ -131,7 +148,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             if (j != i) {
                 Particle particle_j = state[j];
 
-                Vector3f delta = position - particle_j.getPosition() + Vector3f(2 * PARTICLE_RADIUS);
+                Vector3f delta = position - particle_j.getPosition();// + Vector3f(2 * PARTICLE_RADIUS);
                 // cout << "delta" << delta.x() << ","<< delta.y() << ","<< delta.z() << endl;
                 if (delta.absSquared() < H*H) {
                     //  ---------------gradient of pressure computation-----------------
@@ -178,18 +195,19 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         f_pressure *= PARTICLE_MASS;
         f_viscosity *= mu * PARTICLE_MASS;
 
+
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
         // f_pressure.print();
         // cout << density << endl;
-        Vector3f f_collision = .9*collisionForce(particle);
+        Vector3f f_collision = .5*collisionForce(particle);
 
         // (f_viscosity/PARTICLE_MASS).print();
 
         // Total Force
-        f_collision = Vector3f(0, f_collision.y(), 0);
-        // f_viscosity.print();
-        Vector3f totalForce = gravityForce + f_collision + .001*f_viscosity;
+        // f_collision = Vector3f(0, f_collision.y(), 0);
+        // (f_viscosity*.001).print();
+        Vector3f totalForce = gravityForce + f_collision + .1*f_viscosity;
         // if (f_viscosity.abs() > 15){
         //     cout << "wtf" << endl;
         //            f_viscosity.print();
