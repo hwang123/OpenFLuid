@@ -10,7 +10,7 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 5;
+const int N = 6;
 
 const float PARTICLE_RADIUS = .015;
 const float PARTICLE_SPACING = .0225;
@@ -18,7 +18,7 @@ const float PARTICLE_SPACING = .0225;
 const float H = 0.03;//.0457;
 const float Hsquared = H*H;
 const float Hfouth = Hsquared*Hsquared;
-const float mu = .0021;//0.001;
+const float mu = .00081;//0.001;
 
 const float SPRING_CONSTANT = 5; // N/m
 const float PARTICLE_MASS = 0.02;//.03; // kg 
@@ -48,11 +48,11 @@ FluidSystem::FluidSystem()
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
     int particleCount = 0;
-    for (unsigned i = 0; i < N; i++){
-        for (unsigned j = 0; j< N; j++){
+    for (unsigned i = 0; i < N-1; i++){
+        for (unsigned j = 0; j< N-1; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = -len + i*PARTICLE_SPACING;
-                float y = 0.001 + -len + j*PARTICLE_SPACING;
+                float y = 0.01 + -len + j*PARTICLE_SPACING;
                 float z = -len + l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
@@ -192,22 +192,23 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             }
         }
 
-        f_pressure *= PARTICLE_MASS;
+        f_pressure *= -.0051*PARTICLE_MASS;
         f_viscosity *= mu * PARTICLE_MASS;
 
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
         // f_pressure.print();
+        // f_viscosity.print();
         // cout << density << endl;
-        Vector3f f_collision = .5*collisionForce(particle);
+        Vector3f f_collision = collisionForce(particle);
 
         // (f_viscosity/PARTICLE_MASS).print();
 
         // Total Force
         // f_collision = Vector3f(0, f_collision.y(), 0);
         // (f_viscosity*.001).print();
-        Vector3f totalForce = gravityForce + f_collision + .1*f_viscosity;
+        Vector3f totalForce = gravityForce + f_collision + f_viscosity + f_pressure;
         // if (f_viscosity.abs() > 15){
         //     cout << "wtf" << endl;
         //            f_viscosity.print();
@@ -220,7 +221,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         // cout << "gravityForce: " << gravityForce.x() << ","<< gravityForce.y() << ","<< gravityForce.z() << endl;
         // totalForce.print();
 
-        Vector3f acceleration = totalForce / PARTICLE_MASS;
+        Vector3f acceleration = .2*totalForce / PARTICLE_MASS;
 
         Particle newParticle = Particle(i, velocity, acceleration, density);
         f.push_back(newParticle);
@@ -301,7 +302,7 @@ void FluidSystem::draw(GLProgram& gl)
         Particle p = m_vVecState[i];
         Vector3f pos = p.getPosition();
         gl.updateModelMatrix(Matrix4f::translation(pos));
-        drawSphere(.012, 10, 4);
+        drawSphere(.009, 10, 4);
     }
 
     gl.enableLighting(); // reset to default lighting model
