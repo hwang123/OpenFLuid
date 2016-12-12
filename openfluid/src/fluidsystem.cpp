@@ -10,33 +10,47 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 6;
+const int N = 5;
 
+// PARTICLE CONSTANTS
 const float PARTICLE_RADIUS = .015;
+const float PARTICLE_DRAW_RADIUS = .009;
 const float PARTICLE_SPACING = .0225;
+const float PARTICLE_MASS = 0.02;//.03; // kg 
 
+// KERNEL CONSTANTS
 const float H = 0.03;//.0457;
 const float Hsquared = H*H;
 const float Hfouth = Hsquared*Hsquared;
+
+// VISCOSITY CONSTANTS
 const float mu = .00081;//0.001;
 
-const float SPRING_CONSTANT = 5; // N/m
-const float PARTICLE_MASS = 0.02;//.03; // kg 
-const float GRAVITY = 9.8; // m/s
-const float DRAG_CONSTANT = .05;
+// SURFACE TENSION CONSTANTS
+const float sigma = .000009;
+const float ST_THRESHOLD = 7.065;
 
+// EXTERNAL FORCES
+const float GRAVITY = 9.8; // m/s
+
+// WALL CONSTANTS
 const float WALL_K = 75.0; // wall spring constant
 const float WALL_DAMPING = -0.0001; // wall damping constant
 
+// COLOR
+const Vector3f PARTICLE_COLOR(0.0f, 0.0f, 1.0f);
+
 
 float WPoly6(Vector3f R);
+Vector3f WPoly6Grad(Vector3f R);
+float WPoly6Laplacian(Vector3f R);
 Vector3f WSpiky(Vector3f R);
 float WViscosity(Vector3f R);
 
 FluidSystem::FluidSystem()
 {
     // change box size - make sure this is the same as in main.cpp
-    float len = 0.1;
+    float len = 0.05;
     // back, front, left, right, bottom - respectively
     _walls.push_back(Wall(Vector3f(0,-len/2,-len), Vector3f(0,0,1)));
     _walls.push_back(Wall(Vector3f(0,-len/2,len), Vector3f(0,0,-1)));
@@ -48,11 +62,11 @@ FluidSystem::FluidSystem()
     // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
     int particleCount = 0;
-    for (unsigned i = 0; i < N-1; i++){
-        for (unsigned j = 0; j< N-1; j++){
+    for (unsigned i = 0; i < N; i++){
+        for (unsigned j = 0; j< N; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = -len + i*PARTICLE_SPACING;
-                float y = 0.01 + -len + j*PARTICLE_SPACING;
+                float y = 0.05 + -len + j*PARTICLE_SPACING;
                 float z = -len + l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
@@ -124,7 +138,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             }
         }
         particle.density() = .001+PARTICLE_MASS*density_i;
-        // cout <<particle.density() << endl;
 
         // if (particle.density() < 50){
         // particle.density() = 500;
@@ -144,6 +157,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         // based on all other particles
         Vector3f f_pressure;
         Vector3f f_viscosity;
+        Vector3f f_surface;
+        Vector3f colorFieldNormal;
+        float colorFieldLaplacian;
         for (unsigned j = 0; j < state.size(); j+=1) {
             if (j != i) {
                 Particle particle_j = state[j];
@@ -161,8 +177,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 
                     // Lecture video value: pi/roi + pj/roj
                     // float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
-                    // (WSpiky(delta)).print();
-                    // delta.print();
                     f_pressure += p_factor*WSpiky(delta);
                     //  ---------------viscosity computation-----------------
                     float kernel_distance_viscosity = H-delta.abs();
@@ -174,11 +188,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                     // cout << "delta " << kernel_constant_pressure << endl;
                     // viscosity_term.print();
                     f_viscosity += viscosity_term;
-                    // velocity.print();
-                        float dd = WViscosity(delta);
-
-                    // cout << dd << endl;
-                    // cout << particle_j.getDensity() << endl;
 
                     // if ((viscosity_term * mu * PARTICLE_MASS).y() > 20){
                     //     cout << j << endl;
@@ -188,13 +197,28 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                     //     v_factor.print();
                     //     viscosity_term.print();
                     // }
+
+                    //  ---------------surface tension computation-----------------
+                    colorFieldNormal += WPoly6Grad(delta)/particle_j.density(); 
+                    colorFieldLaplacian += WPoly6Laplacian(delta)/particle_j.density();
+
+
                 }
             }
         }
 
         f_pressure *= -.0051*PARTICLE_MASS;
         f_viscosity *= mu * PARTICLE_MASS;
+        colorFieldNormal *= PARTICLE_MASS;
+        colorFieldLaplacian *= PARTICLE_MASS;
 
+
+        if (colorFieldNormal.abs() > ST_THRESHOLD){
+            f_surface = -sigma*colorFieldLaplacian*colorFieldNormal.normalized();
+        }
+        else{
+            f_surface = Vector3f(0.0);
+        }
 
         // Total Force
         // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
@@ -208,7 +232,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         // Total Force
         // f_collision = Vector3f(0, f_collision.y(), 0);
         // (f_viscosity*.001).print();
-        Vector3f totalForce = gravityForce + f_collision + f_viscosity + f_pressure;
+        Vector3f totalForce = gravityForce + f_collision + f_viscosity + f_pressure + f_surface;
         // if (f_viscosity.abs() > 15){
         //     cout << "wtf" << endl;
         //            f_viscosity.print();
@@ -233,14 +257,28 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
 float WPoly6(Vector3f R){
     float constant_term = 315.0 / (64.0 * M_PI * Hfouth * Hfouth * H);
     float factor = Hsquared - R.absSquared();
-    float kernel_distance_density = factor * factor * factor;
-    return kernel_distance_density*constant_term;
+    float kernel_distance = factor * factor * factor;
+    return kernel_distance*constant_term;
+}
+
+Vector3f WPoly6Grad(Vector3f R){
+    float constant_term = -945.0 / (32.0 * M_PI * Hfouth * Hfouth * H);
+    float factor = Hsquared - R.absSquared();
+    float kernel_distance = factor * factor;
+    return kernel_distance*constant_term*R;
+}
+
+float WPoly6Laplacian(Vector3f R){
+    float constant_term = -945.0 / (32.0 * M_PI * Hfouth * Hfouth * H);
+    float factor = Hsquared - R.absSquared();
+    float factor2 = 3*Hsquared - 7*R.absSquared();
+    return constant_term*factor*factor2;
 }
 
 Vector3f WSpiky(Vector3f R){
-    if (R.abs() < .000001){
-        return Vector3f(0,0,0);
-    }
+    // if (R.abs() < .000001){
+    //     return Vector3f(0,0,0);
+    // }
     float constant_term = -45.0 / (M_PI * Hfouth * Hsquared);
     float factor = H - R.abs();
     Vector3f kernel_distance_pressure = factor * factor * R.normalized();
@@ -276,8 +314,6 @@ void FluidSystem::draw(GLProgram& gl)
     //         - or draw the springs as little lines or cylinders
     //         - or draw wireframe mesh
 
-    const Vector3f blue(0.0f, 0.0f, 1.0f);
-
     // EXAMPLE for how to render cloth particles.
     //  - you should replace this code.
     // EXAMPLE: This shows you how to render lines to debug the spring system.
@@ -293,16 +329,13 @@ void FluidSystem::draw(GLProgram& gl)
     //          after a mode change.
     gl.disableLighting();
     gl.updateModelMatrix(Matrix4f::identity()); // update uniforms after mode change
-    // drawBox(Vector3f(0,0,0), 1);
-
-    // not working :(
-    gl.updateMaterial(blue);
 
     for (unsigned i = 0; i < m_vVecState.size(); i+=1){
         Particle p = m_vVecState[i];
         Vector3f pos = p.getPosition();
         gl.updateModelMatrix(Matrix4f::translation(pos));
-        drawSphere(.009, 10, 4);
+
+        drawSphere(PARTICLE_DRAW_RADIUS, 10, 4, PARTICLE_COLOR);
     }
 
     gl.enableLighting(); // reset to default lighting model

@@ -102,13 +102,14 @@ void VertexRecorder::clear()
     m_color.clear();
 }
 
-void drawSphere(float r, int slices, int stacks) {
+void drawSphere(float r, int slices, int stacks, Vector3f color) {
     assert(slices > 1);
     assert(stacks > 1);
     assert(r > 0);
 
     // TODO reuse recorder if sphere meshing becomes a bottleneck.
     VertexRecorder rec;
+    const Vector3f BLUE(1.0f, 0.0f, 1.0f);
 
     float phistep = M_PIf * 2 / slices;
     float thetastep = M_PIf / stacks;
@@ -136,8 +137,8 @@ void drawSphere(float r, int slices, int stacks) {
             Vector3f n3 = p3.normalized();
             Vector3f n4 = p4.normalized();
 
-            rec.record(p1, n1); rec.record(p2, n2); rec.record(p3, n3);
-            rec.record(p1, n1); rec.record(p3, n3); rec.record(p4, n4);
+            rec.record(p1, n1, color); rec.record(p2, n2, color); rec.record(p3, n3, color);
+            rec.record(p1, n1, color); rec.record(p3, n3, color); rec.record(p4, n4, color);
         }
     }
     rec.draw();
@@ -276,9 +277,9 @@ void drawQuadCustom(float w, float height)
 void drawBox(Vector3f location, float len){
     float x = location.x();
     float y = location.y();
-    float z = location.z();
+    float z = location.z()-.007;
 
-    const Vector3f color(0.1f, 0.9f, 0.4f);
+    const Vector3f color(0.5f, 0.9f, 0.4f);
     VertexRecorder rec;
 
     rec.record(Vector3f(x-len,z,y+len), color);
@@ -309,6 +310,6 @@ void drawBox(Vector3f location, float len){
     rec.record(Vector3f(x-len,z-len,y-len), color);
 
     glLineWidth(1.0f);
-    drawQuadCustom(len*2, -len);
+    drawQuadCustom(len*2, -len-.007);
     rec.draw(GL_LINES);
 }

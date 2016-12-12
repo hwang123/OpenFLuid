@@ -29,7 +29,7 @@ private:
 
 // draw a sphere with radius r centered at (0,0,0)
 // slices and stacks control the level of detail of the sphere
-void drawSphere(float r, int slices, int stacks);
+void drawSphere(float r, int slices, int stacks, Vector3f color = Vector3f(0.0,0.0,0.0));
 
 // draw a cylinder. the cylinder extends from y=0 to y=h
 // and from -r to +r in the XZ plane.

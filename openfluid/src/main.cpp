@@ -217,7 +217,7 @@ void drawSystem()
     fluidSystem->draw(gl);
 
     // change box size - make sure this is the same as in fluidsystem.cpp
-    float len = 0.1;
+    float len = 0.055;
     // set uniforms and draw the containing box
     gl.updateModelMatrix(Matrix4f::translation(0, 0, 0));
     gl.updateMaterial(BOX_COLOR);
