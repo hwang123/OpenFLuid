@@ -10,24 +10,25 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 6;
+const int N = 5;
 
 // PARTICLE CONSTANTS
 const float PARTICLE_RADIUS = .015;
-const float PARTICLE_DRAW_RADIUS = .009;
+const float PARTICLE_DRAW_RADIUS = .0078;
 const float PARTICLE_SPACING = .0225;
 const float PARTICLE_MASS = 0.02;//.03; // kg 
+const Vector3f PARTICLE_COLOR(0.0f, 0.0f, 1.0f);
 
-// KERNEL CONSTANTS
+// SPACING KERNEL CONSTANTS
 const float H = 0.03;//.0457;
 const float Hsquared = H*H;
 const float Hfouth = Hsquared*Hsquared;
 
 // VISCOSITY CONSTANTS
-const float mu = .00081;//0.001;
+const float mu = .00181;//0.001;
 
 // SURFACE TENSION CONSTANTS
-const float sigma = .000009;
+const float sigma = .0000009;
 const float ST_THRESHOLD = 7.065;
 
 // EXTERNAL FORCES
@@ -35,12 +36,9 @@ const float GRAVITY = 9.8; // m/s
 
 // WALL CONSTANTS
 const float WALL_K = 75.0; // wall spring constant
-const float WALL_DAMPING = -0.0001; // wall damping constant
+const float WALL_DAMPING = -1.0111; // wall damping constant
 
-// COLOR
-const Vector3f PARTICLE_COLOR(0.0f, 0.0f, 1.0f);
-
-
+// KERNEL FUNCTIONS
 float WPoly6(Vector3f R);
 Vector3f WPoly6Grad(Vector3f R);
 float WPoly6Laplacian(Vector3f R);
@@ -59,11 +57,10 @@ FluidSystem::FluidSystem()
     _walls.push_back(Wall(Vector3f(0,-len,0), Vector3f(0,1,0)));
 
     // Initialize m_vVecState with fluid particles. 
-    // You can again use rand_uniform(lo, hi) to make things a bit more interesting
     m_vVecState.clear();
     int particleCount = 0;
-    for (unsigned i = 0; i < N; i++){
-        for (unsigned j = 0; j< N+5; j++){
+    for (unsigned i = 0; i < N+1; i++){
+        for (unsigned j = 0; j< N+15; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = -len + i*PARTICLE_SPACING;
                 float y = 0.1 + -len + j*PARTICLE_SPACING;
@@ -71,8 +68,7 @@ FluidSystem::FluidSystem()
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);
                 // all particles stationary
-                // Vector3f velocity = Vector3f( rand_uniform(-1,  1), 0, rand_uniform( -1, 1));
-                Vector3f velocity = Vector3f(0);
+                Vector3f velocity = Vector3f(0.0, 00.0, 0.0);
 
                 Particle particle = Particle(particleCount, position, velocity);
                 m_vVecState.push_back(particle);
@@ -80,23 +76,6 @@ FluidSystem::FluidSystem()
             }
         }
     }
-
-    // for (unsigned i = 0; i < N; i++){
-    //     for (unsigned j = 0; j< N; j++){
-    //         float x = -len + i*PARTICLE_SPACING;
-    //         float y = .1;
-    //         float z = -len + j*PARTICLE_SPACING;
-    //         // particles evenly spaced
-    //         Vector3f position = Vector3f(x, y, z);
-    //         // all particles stationary
-    //         // Vector3f velocity = Vector3f( rand_uniform(-1,  1), 0, rand_uniform( -1, 1));
-    //         Vector3f velocity = Vector3f(0);
-
-    //         Particle particle = Particle(particleCount, position, velocity);
-    //         m_vVecState.push_back(particle);
-    //         particleCount += 1;
-    //     }
-    // }
 }
 
 
@@ -111,13 +90,13 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
     // - pressure
     // - surface tension
 
-
+    //**  ---------------gravity computation-----------------**
     // F = mg  -> GRAVITY
-    // ----------------------------------------
     float gForce = PARTICLE_MASS*GRAVITY;
     // only in the y-direction
     Vector3f gravityForce = Vector3f(0,-gForce, 0);
-    // ----------------------------------------
+    //**  ---------------gravity computation-----------------**
+
     for (unsigned i = 0; i < m_vVecState.size(); i+=1){
         Particle& particle = state[i];
         Vector3f position = particle.getPosition();
@@ -135,11 +114,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         }
         particle.density() = .001+PARTICLE_MASS*density_i;
 
-        // if (particle.density() < 50){
-        // particle.density() = 500;
-        // }
-        // cout << density_i << endl;
-
     }
 
 
@@ -150,8 +124,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         double density = particle.density();
         float pressure = particle.getPressure();
 
-        // compute updated density and gradient of pressure
-        // based on all other particles
+        // compute forces based on all other particles
         Vector3f f_pressure;
         Vector3f f_viscosity;
         Vector3f f_surface;
@@ -211,30 +184,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
             f_surface = Vector3f(0.0);
         }
 
-        // Total Force
-        // Vector3f totalForce = (gravityForce +(mu*f_viscosity) + f_pressure)/density;
-        // f_pressure.print();
-        // f_viscosity.print();
-        // cout << density << endl;
         Vector3f f_collision = collisionForce(particle);
 
-        // (f_viscosity/PARTICLE_MASS).print();
-
-        // Total Force
-        // f_collision = Vector3f(0, f_collision.y(), 0);
-        // (f_viscosity*.001).print();
         Vector3f totalForce = gravityForce + f_collision + f_viscosity + f_pressure + f_surface;
-        // if (f_viscosity.abs() > 15){
-        //     cout << "wtf" << endl;
-        //            f_viscosity.print();
-        // f_collision.print(); 
-        // }
-
-        // Vector3f totalForce = gravityForce + f_collision ;//+ f_pressure;
-        // cout << "f_collision: " << f_collision.x() << ","<< f_collision.y() << ","<< f_collision.z() << endl;
-        // cout << "f_pressure: " << f_pressure.x() << ","<< f_pressure.y() << ","<< f_pressure.z() << endl;
-        // cout << "gravityForce: " << gravityForce.x() << ","<< gravityForce.y() << ","<< gravityForce.z() << endl;
-        // totalForce.print();
 
         Vector3f acceleration = .2*totalForce / PARTICLE_MASS;
 
@@ -300,24 +252,6 @@ Vector3f FluidSystem::collisionForce(Particle particle) {
 
 void FluidSystem::draw(GLProgram& gl)
 {
-    //TODO 5: render the system 
-    //         - ie draw the particles as little spheres
-    //         - or draw the springs as little lines or cylinders
-    //         - or draw wireframe mesh
-
-    // EXAMPLE for how to render cloth particles.
-    //  - you should replace this code.
-    // EXAMPLE: This shows you how to render lines to debug the spring system.
-    //
-    //          You should replace this code.
-    //
-    //          Since lines don't have a clearly defined normal, we can't use
-    //          a regular lighting model.
-    //          GLprogram has a "color only" mode, where illumination
-    //          is disabled, and you specify color directly as vertex attribute.
-    //          Note: enableLighting/disableLighting invalidates uniforms,
-    //          so you'll have to update the transformation/material parameters
-    //          after a mode change.
     gl.disableLighting();
     gl.updateModelMatrix(Matrix4f::identity()); // update uniforms after mode change
 
