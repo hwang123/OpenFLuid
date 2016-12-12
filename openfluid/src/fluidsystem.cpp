@@ -10,7 +10,7 @@
 using namespace std;
 
  // your system should at least contain 8x8 particles.
-const int N = 5;
+const int N = 6;
 
 // PARTICLE CONSTANTS
 const float PARTICLE_RADIUS = .015;
@@ -50,7 +50,7 @@ float WViscosity(Vector3f R);
 FluidSystem::FluidSystem()
 {
     // change box size - make sure this is the same as in main.cpp
-    float len = 0.05;
+    float len = 0.1;
     // back, front, left, right, bottom - respectively
     _walls.push_back(Wall(Vector3f(0,-len/2,-len), Vector3f(0,0,1)));
     _walls.push_back(Wall(Vector3f(0,-len/2,len), Vector3f(0,0,-1)));
@@ -63,10 +63,10 @@ FluidSystem::FluidSystem()
     m_vVecState.clear();
     int particleCount = 0;
     for (unsigned i = 0; i < N; i++){
-        for (unsigned j = 0; j< N; j++){
+        for (unsigned j = 0; j< N+5; j++){
             for (unsigned l = 0; l < N; l++){
                 float x = -len + i*PARTICLE_SPACING;
-                float y = 0.05 + -len + j*PARTICLE_SPACING;
+                float y = 0.1 + -len + j*PARTICLE_SPACING;
                 float z = -len + l*PARTICLE_SPACING;
                 // particles evenly spaced
                 Vector3f position = Vector3f(x, y, z);

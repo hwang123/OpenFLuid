@@ -4,6 +4,8 @@ project(a3)
 
 find_package(OpenGL REQUIRED)
 
+set (CMAKE_CXX_FLAGS "-O3")
+
 if (APPLE)
   set(CMAKE_MACOSX_RPATH 1)
 endif()

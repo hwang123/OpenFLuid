@@ -49,6 +49,8 @@ char integrator;
 
 Camera camera;
 bool gMousePressed = false;
+bool paused = false;
+
 GLuint program_color;
 GLuint program_light;
 
@@ -82,6 +84,12 @@ static void keyCallback(GLFWwindow* window, int key,
         initSystem();
         resetTime();
         break;
+    }
+    case 'S':
+    {
+        cout << "Unpausing simulation\n";
+        paused = !paused;
+        // break;
     }
     default:
         cout << "Unhandled key press " << key << "." << endl;
@@ -217,7 +225,7 @@ void drawSystem()
     fluidSystem->draw(gl);
 
     // change box size - make sure this is the same as in fluidsystem.cpp
-    float len = 0.055;
+    float len = 0.105;
     // set uniforms and draw the containing box
     gl.updateModelMatrix(Matrix4f::translation(0, 0, 0));
     gl.updateMaterial(BOX_COLOR);
@@ -293,27 +301,29 @@ int main(int argc, char** argv)
     uint64_t freq = glfwGetTimerFrequency();
     resetTime();
     while (!glfwWindowShouldClose(window)) {
-        // Clear the rendering window
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (!paused){
+            // Clear the rendering window
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        setViewport(window);
+            setViewport(window);
 
-        if (gMousePressed) {
-            drawAxis();
+            if (gMousePressed) {
+                drawAxis();
+            }
+
+            uint64_t now = glfwGetTimerValue();
+            elapsed_s = (double)(now - start_tick) / freq;
+            stepSystem();
+
+            // Draw the simulation
+            drawSystem();
+
+            // Make back buffer visible
+            glfwSwapBuffers(window);
+
+            // Check if any input happened during the last frame
+            glfwPollEvents();
         }
-
-        uint64_t now = glfwGetTimerValue();
-        elapsed_s = (double)(now - start_tick) / freq;
-        stepSystem();
-
-        // Draw the simulation
-        drawSystem();
-
-        // Make back buffer visible
-        glfwSwapBuffers(window);
-
-        // Check if any input happened during the last frame
-        glfwPollEvents();
     }
 
     // All OpenGL resource that are created with
