@@ -277,9 +277,11 @@ void drawQuadCustom(float w, float height)
 void drawBox(Vector3f location, float len){
     float x = location.x();
     float y = location.y();
-    float z = location.z()-.007;
+    float z = location.z()-.006;
 
     const Vector3f color(0.5f, 0.9f, 0.4f);
+    const Vector3f color2(0.5f, 0.9f, 0.4f);
+
     VertexRecorder rec;
 
     rec.record(Vector3f(x-len,z,y+len), color);
@@ -309,7 +311,36 @@ void drawBox(Vector3f location, float len){
     rec.record(Vector3f(x-len,z-len,y+len), color);
     rec.record(Vector3f(x-len,z-len,y-len), color);
 
-    glLineWidth(1.0f);
-    drawQuadCustom(len*2, -len-.007);
+    glLineWidth(2.0f);
+    drawQuadCustom(len*2, -len-.006);
     rec.draw(GL_LINES);
+
+    rec.clear();
+    
+
+    // rec.record(Vector3f(x-len,z-len,y-len), color2);
+    // rec.record(Vector3f(x+len,z,y-len), color2);
+    // rec.record(Vector3f(x+len,z-len,y-len), color2);
+
+    // rec.record(Vector3f(x-len,z-len,y-len), color2);
+    // rec.record(Vector3f(x+len,z,y-len), color2);
+    // rec.record(Vector3f(x-len,z,y-len), color2);
+
+    // rec.record(Vector3f(x-len,z-len,y+len), color2);
+    // rec.record(Vector3f(x+len,z,y+len), color2);
+    // rec.record(Vector3f(x+len,z-len,y+len), color2);
+
+    // rec.record(Vector3f(x-len,z-len,y+len), color2);
+    // rec.record(Vector3f(x+len,z,y+len), color2);
+    // rec.record(Vector3f(x-len,z,y+len), color2);
+
+    // rec.record(Vector3f(x-len,z-len,y-len), color2);
+    // rec.record(Vector3f(x-len,z,y-len), color2);
+    // rec.record(Vector3f(x-len,z,y+len), color2);
+
+    // rec.record(Vector3f(x-len,z-len,y-len), color2);
+    // rec.record(Vector3f(x-len,z-len,y+len), color2);
+    // rec.record(Vector3f(x-len,z,y+len), color2);
+
+    // rec.draw();
 }

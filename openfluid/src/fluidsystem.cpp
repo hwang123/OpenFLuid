@@ -109,7 +109,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
     // - collision forces
     // - viscous drag
     // - pressure
-    // ---Below Not Implemented---
     // - surface tension
 
 
@@ -119,11 +118,9 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
     // only in the y-direction
     Vector3f gravityForce = Vector3f(0,-gForce, 0);
     // ----------------------------------------
-
     for (unsigned i = 0; i < m_vVecState.size(); i+=1){
         Particle& particle = state[i];
         Vector3f position = particle.getPosition();
-        Vector3f velocity = particle.getVelocity();
         // compute density of every particle first
         double density_i = 0;
         for (unsigned j = 0; j < state.size(); j+=1) {
@@ -133,7 +130,6 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 Vector3f delta = position - particle_j.getPosition();
                 if (delta.absSquared() < H*H) {
                     density_i += WPoly6(delta);
-                    // cout << WPoly6(delta) << endl;
                 }
             }
         }
@@ -145,6 +141,7 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
         // cout << density_i << endl;
 
     }
+
 
     for (unsigned i = 0; i < m_vVecState.size(); i+=1){
         Particle particle = state[i];
@@ -167,7 +164,8 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                 Vector3f delta = position - particle_j.getPosition();// + Vector3f(2 * PARTICLE_RADIUS);
                 // cout << "delta" << delta.x() << ","<< delta.y() << ","<< delta.z() << endl;
                 if (delta.absSquared() < H*H) {
-                    //  ---------------gradient of pressure computation-----------------
+
+                    //**  ---------------pressure computation-----------------**
 
                     // sample implementation value: pi/roi2 + pj/roj2
                     float p_factor = (pressure/(density*density)) + (particle_j.getPressure()/(particle_j.density()*particle_j.density())); 
@@ -178,30 +176,23 @@ std::vector<Particle> FluidSystem::evalF(std::vector<Particle> state)
                     // Lecture video value: pi/roi + pj/roj
                     // float p_factor = pressure/density + particle_j.getPressure()/particle_j.getDensity();
                     f_pressure += p_factor*WSpiky(delta);
-                    //  ---------------viscosity computation-----------------
+                    //**  ---------------pressure computation-----------------**
+
+
+                    //**  ---------------viscosity computation-----------------**
                     float kernel_distance_viscosity = H-delta.abs();
 
                     Vector3f v_factor = (particle_j.getVelocity() - velocity);// / particle_j.getDensity();
-                    // cout << WViscosity(delta) << endl;
 
                     Vector3f viscosity_term = (WViscosity(delta)/ particle_j.getDensity())*v_factor;
-                    // cout << "delta " << kernel_constant_pressure << endl;
-                    // viscosity_term.print();
                     f_viscosity += viscosity_term;
+                    //**  ---------------viscosity computation-----------------**
 
-                    // if ((viscosity_term * mu * PARTICLE_MASS).y() > 20){
-                    //     cout << j << endl;
-                    //     cout << "alert" << endl;
-                    //     cout << particle_j.getDensity() << endl;
-                    //     cout << dd <<endl;
-                    //     v_factor.print();
-                    //     viscosity_term.print();
-                    // }
 
-                    //  ---------------surface tension computation-----------------
+                    //**  ---------------surface tension computation-----------------**
                     colorFieldNormal += WPoly6Grad(delta)/particle_j.density(); 
                     colorFieldLaplacian += WPoly6Laplacian(delta)/particle_j.density();
-
+                    //**  ---------------surface tension computation-----------------**
 
                 }
             }

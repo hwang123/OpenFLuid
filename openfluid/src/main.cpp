@@ -221,6 +221,7 @@ void drawSystem()
     // set uniforms and draw the containing box
     gl.updateModelMatrix(Matrix4f::translation(0, 0, 0));
     gl.updateMaterial(BOX_COLOR);
+    glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     drawBox(Vector3f(0,0,0),len);
 }
 
